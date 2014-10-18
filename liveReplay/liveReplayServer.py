@@ -23,11 +23,10 @@ import os
 import logging
 import sys
 
+from passwords import DB_SERVER, DB_PORT, DB_LOGIN, DB_PASSWORD, DB_TABLE
+
 DB_HOSTNAME = "localhost"
-DB_PORT     = 3306
 DB_DATABASE = "faf_lobby"
-DB_LOGIN    = "login"
-DB_PASSWORD = "password"
 
 from faPackets import Packet
 UNIT16 = 8
@@ -52,7 +51,7 @@ class ReplayServer(QtNetwork.QTcpServer):
         self.setMaxPendingConnections(1)
         self.db.setDatabaseName(DB_DATABASE)  
         self.db.setUserName(DB_LOGIN)  
-        self.db.setPassword(PASSWORD_DB)
+        self.db.setPassword(DB_PASSWORD)
         
         self.recorders = []
            
