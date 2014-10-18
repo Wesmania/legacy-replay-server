@@ -30,8 +30,8 @@ DELAY = 300 # Delay in seconds. Add "lag" in the data stream for listeners.
 
 UNIT16 = 8
 
-REPLAY_PATH = "/var/www/faf/replays"
-GW_REPLAY_PATH  = "/var/www/faf/gwreplays"
+from configobj import ConfigObj
+config = ConfigObj("/etc/faforever/faforever.conf")
 
 import struct
 
@@ -259,14 +259,24 @@ WHERE galacticwar.game_stats.id = ? ")
         else:
             self.getReplaysInfos()
         
-        path = REPLAY_PATH
+        # Construct the path where the replay is stored
+        path = config['global']['content_path'] + "vault/replay_vault"
         if self.gw :
-            path = GW_REPLAY_PATH
+            path = config['global']['content_path'] + "gwreplays"
 
-        # NOTE : this will write a temporary file in the disk as the replay is saved in the DB.
-        # It was originally written on the disk, and can be reverted to that state as the code is the same.
+        dirsize = 100
+        depth = 5
+        i = depth
+        dirname = path
+        while i > 1:
+            dirname = dirname + "/" + str((self.uid/(dirsize**(i-1)))%dirsize)
+            i = i - 1
 
-        filename = os.path.join(path, str(self.uid) + ".fafreplay")
+        filename = dirname + "/" + str(self.uid) + ".fafreplay"
+
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+
         writeFile = QtCore.QFile(filename)
         if(writeFile.open(QtCore.QIODevice.WriteOnly)) :
 
@@ -300,24 +310,18 @@ WHERE galacticwar.game_stats.id = ? ")
 
         writeFile.close()
         
-        result = open(str(writeFile.fileName())).read()
-        
-        # We put the replay inside the Database.
+        # We mention the existence of the replay inside the Database.
         self.parent.db.open()
         query = QSqlQuery(self.parent.db)
         if self.gw :
-            query.prepare("INSERT INTO `galacticwar`.`game_replays`(`UID`, `file`) VALUES (?,?)")
+            query.prepare("INSERT INTO `galacticwar`.`game_replays`(`UID`) VALUES (?)")
         else :
-            query.prepare("INSERT INTO `game_replays`(`UID`, `file`) VALUES (?,?)")
+            query.prepare("INSERT INTO `game_replays`(`UID`) VALUES (?)")
         query.addBindValue(self.uid)
-        query.addBindValue(result)
-        if query.exec_() :
-            os.remove(str(writeFile.fileName())) # THIS is deleted the replay. If removed, it's reverted to the old system
-            
+        query.exec_()
+
         self.parent.db.close()
-        
-        
-       
+
         self.__logger.debug("fafreplay written")
        
 
