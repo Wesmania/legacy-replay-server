@@ -39,8 +39,7 @@ class ReplayServer(QtNetwork.QTcpServer):
     This is a local listening server that FA can send its replay data to.
     It will instantiate a fresh ReplayThread for each FA instance that launches.
     '''
-    __logger = logging.getLogger("faf.replays.server")
-    __logger.setLevel(logging.DEBUG)
+    __logger = logging.getLogger(__name__)
 
     def __init__(self, local_port, *args, **kwargs):
         QtNetwork.QTcpServer.__init__(self, *args, **kwargs)

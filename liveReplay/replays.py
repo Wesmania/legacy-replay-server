@@ -65,8 +65,7 @@ class session(object):
 
     
 class replay(object):
-    __logger = logging.getLogger("faf.replay")
-    __logger.setLevel(logging.DEBUG)
+    __logger = logging.getLogger(__name__)
     
     def __init__(self, gameid, replayName, gw=False, parent = None):
         
@@ -328,8 +327,7 @@ WHERE galacticwar.game_stats.id = ? ")
             
 
 class replayListener(object):
-    __logger = logging.getLogger("faf.replay.listener")
-    __logger.setLevel(logging.DEBUG)    
+    __logger = logging.getLogger(__name__)
     
     def __init__(self, replay, session, parent = None):
         self.parent = parent
@@ -473,7 +471,7 @@ class replayListener(object):
 
 class replayWriter(object):
     
-    __logger = logging.getLogger("faf.replay.writer")
+    __logger = logging.getLogger(__name__)
     __logger.setLevel(logging.DEBUG)
         
     def __init__(self, replay, parent = None):
@@ -527,7 +525,7 @@ class replayWriter(object):
         
 class replays(object):
     
-    __logger = logging.getLogger("faf.replays.container")
+    __logger = logging.getLogger(__name__)
     __logger.setLevel(logging.DEBUG)
     
     def __init__(self):

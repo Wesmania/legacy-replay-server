@@ -35,8 +35,7 @@ class ReplayThread(QtCore.QObject):
     This is a simple class that takes all the FA replay data input from its inputSocket, writes it to a file, 
     and relays it to an internet server via its relaySocket.
     '''
-    __logger = logging.getLogger("faf.replays.recorder")
-    __logger.setLevel(logging.DEBUG)
+    __logger = logging.getLogger(__name__)
     
     def __init__(self, parent, local_socket, *args, **kwargs):
         QtCore.QObject.__init__(self, *args, **kwargs)
