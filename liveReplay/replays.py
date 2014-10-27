@@ -272,6 +272,7 @@ WHERE galacticwar.game_stats.id = ? ")
             i = i - 1
 
         filename = dirname + "/" + str(self.uid) + ".fafreplay"
+        self.__logger.debug("filename: " + filename)
 
         if not os.path.exists(dirname):
             os.makedirs(dirname)
@@ -317,7 +318,9 @@ WHERE galacticwar.game_stats.id = ? ")
         else :
             query.prepare("INSERT INTO `game_replays`(`UID`) VALUES (?)")
         query.addBindValue(self.uid)
-        query.exec_()
+
+        if not query.exec_():
+            self.__logger.debug("error adding replay to database")
 
         self.parent.db.close()
 
