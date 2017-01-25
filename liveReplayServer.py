@@ -33,7 +33,7 @@ import logging
 from logging import handlers
 
 from configobj import ConfigObj
-config = ConfigObj("/etc/faforever/faforever.conf")
+config = ConfigObj("replayserver.conf")
 
 from liveReplay import liveReplayServer
 
@@ -46,12 +46,10 @@ class start(QObject):
 
         super(start, self).__init__(parent)
         self.rootlogger = logging.getLogger("")
-        self.logHandler = handlers.RotatingFileHandler(config['global']['logpath'] + "liveReplayServer.log", backupCount=15, maxBytes=524288 )
-        self.logFormatter = logging.Formatter('%(asctime)s %(levelname)-8s %(name)-20s %(message)s')
-        self.logHandler.setFormatter( self.logFormatter )
-        self.rootlogger.addHandler( self.logHandler )
-        self.rootlogger.setLevel( eval ("logging." + config['liveReplayServer']['loglevel'] ))
         self.logger = logging.getLogger(__name__)
+        ch = logging.StreamHandler()
+        ch.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+        self.rootlogger.addHandler(ch)
         
         self.replayServer =  liveReplayServer.ReplayServer(REPLAY_SERVER_PORT)
 

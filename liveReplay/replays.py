@@ -31,7 +31,7 @@ DELAY = 300 # Delay in seconds. Add "lag" in the data stream for listeners.
 UNIT16 = 8
 
 from configobj import ConfigObj
-config = ConfigObj("/etc/faforever/faforever.conf")
+config = ConfigObj("replayserver.conf")
 
 import struct
 
@@ -144,7 +144,7 @@ WHERE galacticwar.game_stats.id = ? ")
             self.replayInfo["num_players"] = query.size()
             query.first()
             self.replayInfo["featured_mod"] = str(query.value(0))
-            self.replayInfo["game_type"] = int( query.value(1))
+            self.replayInfo["game_type"] = int(query.value(1) or 0)
             mapname = str(query.value(2))
             self.replayInfo["title"] = str(query.value(3).encode('utf-8'))
             
