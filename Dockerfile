@@ -18,7 +18,7 @@ RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ADD . /code/
 
-COPY passwords.py /code/liveReplay/passwords.py
+COPY passwords.example.py /code/liveReplay/passwords.py
 
 WORKDIR /code/
 
