@@ -22,6 +22,7 @@ COPY passwords.example.py /code/liveReplay/passwords.py
 
 WORKDIR /code/
 
+RUN chmod +x liveReplayServer.py
 CMD ./liveReplayServer.py
 
 EXPOSE 9001
