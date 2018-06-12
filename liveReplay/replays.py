@@ -143,11 +143,6 @@ WHERE galacticwar.game_stats.id = ? ")
         if  query.size() != 0: 
             self.replayInfo["num_players"] = query.size()
             query.first()
-            values = []
-            for i in range(9):
-                values.append(str(query.value(i)))
-            value_str = ", ".join(values)
-            self.__logger.debug("replay {} info: {}".format(self.uid, value_str))
             self.replayInfo["featured_mod"] = str(query.value(0))
             self.replayInfo["game_type"] = int(query.value(1) or 0)
             mapname = str(query.value(2))
