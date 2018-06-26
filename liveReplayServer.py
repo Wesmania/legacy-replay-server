@@ -19,11 +19,11 @@
 #-------------------------------------------------------------------------------
 
 
-from PySide.QtCore import QThread, QObject, SIGNAL, SLOT
-from PySide.QtCore import QByteArray, QDataStream, QIODevice, QReadWriteLock
+from PyQt5.QtCore import QThread, QObject, SIGNAL, SLOT
+from PyQt5.QtCore import QByteArray, QDataStream, QIODevice, QReadWriteLock
 
-from PySide import QtCore
-from PySide.QtSql import *
+from PyQt5 import QtCore
+from PyQt5.QtSql import *
 
 import logging
 

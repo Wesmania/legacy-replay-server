@@ -16,7 +16,7 @@
 # GNU General Public License for more details.
 #-------------------------------------------------------------------------------
 
-from PySide import QtCore, QtNetwork, QtSql
+from PyQt5 import QtCore, QtNetwork, QtSql
 
 import time
 import os

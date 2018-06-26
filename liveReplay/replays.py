@@ -16,8 +16,8 @@
 # GNU General Public License for more details.
 #-------------------------------------------------------------------------------
 
-from PySide import QtCore, QtNetwork, QtGui
-from PySide.QtSql import QSqlQuery
+from PyQt5 import QtCore, QtNetwork, QtGui
+from PyQt5.QtSql import QSqlQuery
 import time
 import zipfile
 import logging

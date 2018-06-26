@@ -16,9 +16,9 @@
 # GNU General Public License for more details.
 #-------------------------------------------------------------------------------
 
-from PySide import QtCore, QtNetwork, QtGui
+from PyQt5 import QtCore, QtNetwork, QtGui
 
-from PySide.QtNetwork import QTcpSocket
+from PyQt5.QtNetwork import QTcpSocket
 
 import time
 import os
@@ -61,7 +61,7 @@ class ReplayThread(QtCore.QObject):
         if self.inputSocket != None:
             if self.inputSocket.isValid() and self.inputSocket.state() == 3:
                 datas = self.inputSocket.read(self.inputSocket.bytesAvailable())
-                datas = str(datas)  # Useless in PySide. It's a PyQt4 leftover. I kept lot of them to be sure to not break anything.
+                datas = str(datas)  # Useless in PyQt5. It's a PyQt4 leftover. I kept lot of them to be sure to not break anything.
 
                 # Record locally
 
