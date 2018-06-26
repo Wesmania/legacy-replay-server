@@ -4,12 +4,12 @@
 # are made available under the terms of the GNU Public License v3.0
 # which accompanies this distribution, and is available at
 # http://www.gnu.org/licenses/gpl.html
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -33,6 +33,7 @@ UNIT16 = 8
 from .replayServerThread import ReplayThread
 from .replays import *
 
+
 class ReplayServer(QtNetwork.QTcpServer):
     ''' 
     This is a local listening server that FA can send its replay data to.
@@ -42,20 +43,20 @@ class ReplayServer(QtNetwork.QTcpServer):
 
     def __init__(self, local_port, *args, **kwargs):
         QtNetwork.QTcpServer.__init__(self, *args, **kwargs)
- 
-        self.db= QtSql.QSqlDatabase.addDatabase("QMYSQL")  
-        self.db.setHostName(DB_SERVER)  
+
+        self.db = QtSql.QSqlDatabase.addDatabase("QMYSQL")
+        self.db.setHostName(DB_SERVER)
         self.db.setPort(DB_PORT)
         self.setMaxPendingConnections(1)
-        self.db.setDatabaseName(DB_DATABASE)  
-        self.db.setUserName(DB_LOGIN)  
+        self.db.setDatabaseName(DB_DATABASE)
+        self.db.setUserName(DB_LOGIN)
         self.db.setPassword(DB_PASSWORD)
-        
+
         self.recorders = []
-           
+
         self.replays = replays()
         self.__logger.debug("initializing...")
-        #self.newConnection.connect(self.acceptConnection)
+        # self.newConnection.connect(self.acceptConnection)
         while not self.isListening():
             self.listen(QtNetwork.QHostAddress.Any, local_port)
             if (self.isListening()):
@@ -65,14 +66,11 @@ class ReplayServer(QtNetwork.QTcpServer):
                 answer = QtGui.QMessageBox.question(None, "Port Occupied", "FAF couldn't start its local replay server, which is needed to play Forged Alliance online. Possible reasons:<ul><li><b>FAF is already running</b> (most likely)</li><li>another program is listening on port {port}</li></ul>".format(port=local_port), QtGui.QMessageBox.Retry, QtGui.QMessageBox.Abort)
                 if answer == QtGui.QMessageBox.Abort:
                     sys.exit()
-              
+
     def removeRecorder(self, recorder):
         if recorder in self.recorders:
             self.recorders.remove(recorder)
             recorder.deleteLater()
 
-
     def incomingConnection(self, socketId):
         self.recorders.append(ReplayThread(self, socketId))
-             
-            
