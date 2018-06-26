@@ -25,13 +25,11 @@ import sys
 
 from passwords import DB_SERVER, DB_PORT, DB_LOGIN, DB_PASSWORD
 
-DB_DATABASE = "faf_lobby"
-
-from faPackets import Packet
 
 from .replayServerThread import ReplayThread
 from .replays import *
 
+DB_DATABASE = "faf_lobby"
 
 class ReplayServer(QtNetwork.QTcpServer):
     ''' 

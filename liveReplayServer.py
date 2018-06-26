@@ -19,17 +19,13 @@
 #-------------------------------------------------------------------------------
 
 
-from PyQt5.QtCore import QThread, QObject, SIGNAL, SLOT
-from PyQt5.QtCore import QByteArray, QDataStream, QIODevice, QReadWriteLock
+from PyQt5.QtCore import QObject
 
 from PyQt5 import QtCore
-from PyQt5.QtSql import *
 
 import logging
 
 from liveReplay import liveReplayServer
-from configobj import ConfigObj
-config = ConfigObj("replayserver.conf")
 
 REPLAY_SERVER_PORT = 15000
 
