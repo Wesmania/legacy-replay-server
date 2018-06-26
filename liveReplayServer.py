@@ -18,43 +18,32 @@
 # GNU General Public License for more details.
 #-------------------------------------------------------------------------------
 
-
 from PyQt5.QtCore import QObject
-
 from PyQt5 import QtCore
-
 import logging
-
+import sys
 from liveReplay import liveReplayServer
 
 REPLAY_SERVER_PORT = 15000
 
 
 class start(QObject):
-
-    def __init__(self, parent=None):
-
-        super(start, self).__init__(parent)
+    def __init__(self):
+        super(start, self).__init__()
         self.rootlogger = logging.getLogger("")
         self.logger = logging.getLogger(__name__)
         ch = logging.StreamHandler()
         ch.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
         self.rootlogger.addHandler(ch)
-
         self.replayServer = liveReplayServer.ReplayServer(REPLAY_SERVER_PORT)
 
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)
-    import sys
-
     try:
-
         app = QtCore.QCoreApplication(sys.argv)
         server = start()
         app.exec_()
-
     except Exception as ex:
-
         logger.exception("Something awful happened!")
         logger.debug("Finishing main")
