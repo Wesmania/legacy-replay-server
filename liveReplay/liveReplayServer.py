@@ -30,8 +30,8 @@ DB_DATABASE = "faf_lobby"
 from faPackets import Packet
 UNIT16 = 8
 
-from replayServerThread import ReplayThread
-from replays import *
+from .replayServerThread import ReplayThread
+from .replays import *
 
 class ReplayServer(QtNetwork.QTcpServer):
     ''' 

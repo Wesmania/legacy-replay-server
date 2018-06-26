@@ -26,7 +26,7 @@ import logging
 
 import sys
 
-from replays import replay, replayWriter, session
+from .replays import replay, replayWriter, session
 
 import logging
 

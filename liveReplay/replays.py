@@ -124,7 +124,7 @@ WHERE galacticwar.game_stats.id = ? ")
             query2.prepare("SELECT fileId, MAX(version) FROM `%s` LEFT JOIN %s ON `fileId` = %s.id GROUP BY fileId" % (tableModFiles, tableMod, tableMod))
             query2.exec_()
             if query2.size() != 0 :
-                while query2.next() :
+                while next(query2) :
                     self.replayInfo["featured_mod_versions"][int(query2.value(0))] = int(query2.value(1))  
             
             self.replayInfo["mapname"] = os.path.splitext(os.path.basename(mapname))[0]
@@ -157,7 +157,7 @@ WHERE galacticwar.game_stats.id = ? ")
             query2.prepare("SELECT fileId, MAX(version) FROM `%s` LEFT JOIN %s ON `fileId` = %s.id GROUP BY fileId" % (tableModFiles, tableMod, tableMod))
             query2.exec_()
             if query2.size() != 0 :
-                while query2.next() :
+                while next(query2) :
                     self.replayInfo["featured_mod_versions"][int(query2.value(0))] = int(query2.value(1))  
 
             self.replayInfo["mapname"] = os.path.splitext(os.path.basename(mapname))[0]
@@ -166,7 +166,7 @@ WHERE galacticwar.game_stats.id = ? ")
             
             teams = {}
             
-            while query.next() :
+            while next(query) :
 
                 team = int(query.value(8))
                 name = str(query.value(5))
