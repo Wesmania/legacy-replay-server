@@ -16,7 +16,7 @@
 # GNU General Public License for more details.
 #-------------------------------------------------------------------------------
 
-from PySide import QtCore, QtNetwork, QtGui, QtSql
+from PySide import QtCore, QtNetwork, QtSql
 
 import time
 import os
@@ -56,16 +56,13 @@ class ReplayServer(QtNetwork.QTcpServer):
 
         self.replays = replays()
         self.__logger.debug("initializing...")
-        # self.newConnection.connect(self.acceptConnection)
         while not self.isListening():
             self.listen(QtNetwork.QHostAddress.Any, local_port)
             if (self.isListening()):
                 self.__logger.debug("listening on address " + self.serverAddress().toString() + ":" + str(self.serverPort()))
             else:
                 self.__logger.error("cannot listen, port probably used by another application: " + str(local_port))
-                answer = QtGui.QMessageBox.question(None, "Port Occupied", "FAF couldn't start its local replay server, which is needed to play Forged Alliance online. Possible reasons:<ul><li><b>FAF is already running</b> (most likely)</li><li>another program is listening on port {port}</li></ul>".format(port=local_port), QtGui.QMessageBox.Retry, QtGui.QMessageBox.Abort)
-                if answer == QtGui.QMessageBox.Abort:
-                    sys.exit()
+                sys.exit()
 
     def removeRecorder(self, recorder):
         if recorder in self.recorders:
