@@ -56,16 +56,11 @@ class ReplayThread(QtCore.QObject):
                 # Record locally
 
                 if not self.init:
-                    gw = False
                     if datas.startswith("P/"):
                         index = datas.find("\x00")
                         replayName = datas[2:index].lower()
                         self.__logger.info("New replay received %s" % replayName)
-
-                        if replayName.endswith(".gwreplay") == True:
-                            gw = True
-
-                        if gw == False and replayName.endswith(".scfareplay") == False:
+                        if not replayName.endswith(".scfareplay"):
                             self.__logger.warn(("The replay name %s is not valid" % replayName))
                             self.inputSocket.abort()
                             return
@@ -75,10 +70,10 @@ class ReplayThread(QtCore.QObject):
 
                         # find if a game with the same uid is running
 
-                        self.replay = self.parent.replays.get(gameId, gw)
+                        self.replay = self.parent.replays.get(gameId)
                         if self.replay == None:
-                            self.replay = replay(gameId, replayName, gw, self.parent)
-                            self.parent.replays.put(self.replay, gw)
+                            self.replay = replay(gameId, replayName, self.parent)
+                            self.parent.replays.put(self.replay)
 
                         self.replayWriter = replayWriter(self.replay, self)
 

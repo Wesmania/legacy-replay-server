@@ -64,10 +64,9 @@ class session(object):
 class replay(object):
     __logger = logging.getLogger(__name__)
 
-    def __init__(self, gameid, replayName, gw=False, parent=None):
+    def __init__(self, gameid, replayName, parent=None):
 
         self.startTime = time.time()
-        self.gw = gw
         self.replayInfo = {}
         self.replayInfo["uid"] = gameid
         self.replayInfo["featured_mod"] = "faf"
@@ -90,43 +89,6 @@ class replay(object):
 
         for writer in self.writers:
             writer.stop()
-
-    def getGWReplaysInfos(self):
-        self.parent.db.open()
-        self.replayInfo["game_end"] = time.time()
-        query = QSqlQuery(self.parent.db)
-        self.replayInfo["featured_mod"] = "gw"
-        self.replayInfo["game_type"] = 0
-        query.prepare("SELECT filename, planets.name, avatars.name \
-FROM galacticwar.game_stats \
-LEFT JOIN galacticwar.game_player_stats ON galacticwar.game_player_stats.`gameId` = galacticwar.game_stats.id \
-LEFT JOIN galacticwar.planets ON galacticwar.planets.id = galacticwar.game_stats.planetuid \
-LEFT JOIN galacticwar.planet_maps ON galacticwar.planet_maps.planetuid =  galacticwar.game_stats.planetuid \
-LEFT JOIN faf_lobby.table_map ON galacticwar.planet_maps.`mapuid` = faf_lobby.table_map.id \
-LEFT JOIN galacticwar.avatars ON galacticwar.avatars.id = galacticwar.game_player_stats.`avatarId` \
-WHERE galacticwar.game_stats.id = ? ")
-        query.addBindValue(self.uid)
-        query.exec_()
-        if query.size() != 0:
-            self.replayInfo["num_players"] = query.size()
-            query.first()
-            mapname = str(query.value(0))
-            self.replayInfo["title"] = str("battle on " + query.value(1))
-            self.replayInfo["featured_mod_versions"] = {}
-            tableMod = "updates_gw"
-            tableModFiles = tableMod + "_files"
-
-            query2 = QSqlQuery(self.parent.db)
-            query2.prepare("SELECT fileId, MAX(version) FROM `%s` LEFT JOIN %s ON `fileId` = %s.id GROUP BY fileId" % (tableModFiles, tableMod, tableMod))
-            query2.exec_()
-            if query2.size() != 0:
-                while next(query2):
-                    self.replayInfo["featured_mod_versions"][int(query2.value(0))] = int(query2.value(1))
-
-            self.replayInfo["mapname"] = os.path.splitext(os.path.basename(mapname))[0]
-            self.replayInfo["complete"] = True
-
-        self.parent.db.close()
 
     def getReplaysInfos(self):
         # general stats
@@ -245,15 +207,10 @@ WHERE galacticwar.game_stats.id = ? ")
         self.__logger.debug("writing the replay")
         self.__logger.debug(self.uid)
 
-        if self.gw:
-            self.getGWReplaysInfos()
-        else:
-            self.getReplaysInfos()
+        self.getReplaysInfos()
 
         # Construct the path where the replay is stored
         path = config['global']['content_path'] + "vault/replay_vault"
-        if self.gw:
-            path = config['global']['content_path'] + "gwreplays"
 
         dirsize = 100
         depth = 5
@@ -300,10 +257,7 @@ WHERE galacticwar.game_stats.id = ? ")
         # We mention the existence of the replay inside the Database.
         self.parent.db.open()
         query = QSqlQuery(self.parent.db)
-        if self.gw:
-            query.prepare("INSERT INTO `galacticwar`.`game_replays`(`UID`) VALUES (?)")
-        else:
-            query.prepare("INSERT INTO `game_replays`(`UID`) VALUES (?)")
+        query.prepare("INSERT INTO `game_replays`(`UID`) VALUES (?)")
         query.addBindValue(self.uid)
 
         if not query.exec_():
@@ -503,36 +457,20 @@ class replays(object):
 
     def __init__(self):
         self.replays = []
-        self.gwreplays = []
 
-    def get(self, gameid, gw=False):
+    def get(self, gameid):
         result = None
-        if gw:
-            for replay in self.gwreplays:
-                if replay.uid == gameid and replay.isInProgress():
-                    self.__logger.debug("replay {} found".format(gameid))
-                    return replay
-        else:
-            for replay in self.replays:
-                if replay.uid == gameid and replay.isInProgress():
-                    self.__logger.debug("replay {} found".format(gameid))
-                    return replay
-
+        for replay in self.replays:
+            if replay.uid == gameid and replay.isInProgress():
+                self.__logger.debug("replay {} found".format(gameid))
+                return replay
         return result
 
-    def delete(self, replay, gw=False):
+    def delete(self, replay):
         self.__logger.debug("deleting replay called")
-
-        if gw:
-            if replay in self.gwreplays:
-                self.__logger.info("deleting replay %s" % str(replay.uid))
-                self.gwreplays.remove(replay)
-                #del replay
-        else:
-            if replay in self.replays:
-                self.__logger.info("deleting replay %s" % str(replay.uid))
-                self.replays.remove(replay)
-                #del replay
+        if replay in self.replays:
+            self.__logger.info("deleting replay %s" % str(replay.uid))
+            self.replays.remove(replay)
 
     def checkOldReplays(self):
         # check if some old replays are still in memory.
@@ -547,20 +485,6 @@ class replays(object):
         for replay in toRemove:
             self.delete(replay)
 
-        toRemove = []
-        for r in self.gwreplays:
-            diff = time.time() - r.startTime
-            if diff > 14400:
-                self.__logger.debug("old replay detected")
-                r.forceEnd()
-                toRemove.append(r)
-
-        for replay in toRemove:
-            self.delete(replay, True)
-
-    def put(self, replay, gw=False):
+    def put(self, replay):
         self.checkOldReplays()
-        if gw:
-            self.gwreplays.append(replay)
-        else:
-            self.replays.append(replay)
+        self.replays.append(replay)
