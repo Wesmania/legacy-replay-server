@@ -21,22 +21,16 @@
 
 from PySide.QtCore import QThread, QObject, SIGNAL, SLOT
 from PySide.QtCore import QByteArray, QDataStream, QIODevice, QReadWriteLock
-from PySide.QtNetwork import QTcpServer, QTcpSocket, QAbstractSocket, QHostInfo
 
-from PySide import QtCore, QtNetwork, QtSql
+from PySide import QtCore
 from PySide.QtSql import *
 
-import uuid
-import random
 import logging
-from logging import handlers
 
+from liveReplay import liveReplayServer
 from configobj import ConfigObj
 config = ConfigObj("replayserver.conf")
 
-from liveReplay import liveReplayServer
-
-UNIT16 = 8
 REPLAY_SERVER_PORT = 15000
 
 

@@ -29,8 +29,6 @@ import zlib
 
 DELAY = 300  # Delay in seconds. Add "lag" in the data stream for listeners.
 
-UNIT16 = 8
-
 from configobj import ConfigObj
 config = ConfigObj("replayserver.conf")
 

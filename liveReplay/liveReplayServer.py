@@ -28,7 +28,6 @@ from passwords import DB_SERVER, DB_PORT, DB_LOGIN, DB_PASSWORD
 DB_DATABASE = "faf_lobby"
 
 from faPackets import Packet
-UNIT16 = 8
 
 from .replayServerThread import ReplayThread
 from .replays import *
