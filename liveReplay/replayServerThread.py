@@ -84,7 +84,7 @@ class ReplayThread(QtCore.QObject):
 
                         self.replay = self.parent.replays.get(gameId)
                         if self.replay == None:
-                            self.replay = replay(gameId, replayName, self.parent)
+                            self.replay = replay(gameId, replayName, self.parent.db)
                             self.parent.replays.put(self.replay)
 
                         self.replayWriter = replayWriter(self.replay, self)

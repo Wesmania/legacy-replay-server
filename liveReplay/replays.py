@@ -52,13 +52,13 @@ def readInt(offset, bin):
 class replay(object):
     __logger = logging.getLogger(__name__)
 
-    def __init__(self, gameid, replayName, parent=None):
+    def __init__(self, gameid, replayName, db):
         self.startTime = time.time()
         self.replayInfo = {}
         self.replayInfo["uid"] = gameid
         self.replayInfo["featured_mod"] = "faf"
 
-        self.parent = parent
+        self.db = db
         self.replayName = replayName
         self.uid = gameid
 
@@ -79,10 +79,10 @@ class replay(object):
 
     def getReplaysInfos(self):
         # general stats
-        self.parent.db.open()
+        self.db.open()
 
         self.replayInfo["game_end"] = time.time()
-        query = QSqlQuery(self.parent.db)
+        query = QSqlQuery(self.db)
         queryStr = ("SELECT game_featuredMods.gamemod, gameType, filename, gameName, host, login, playerId, AI, team FROM `game_stats` LEFT JOIN game_player_stats ON `game_player_stats`.`gameId` = game_stats.id LEFT JOIN table_map ON `game_stats`.`mapId` = table_map.id LEFT JOIN login ON login.id = `game_player_stats`.`playerId`  LEFT JOIN  game_featuredMods ON `game_stats`.`gameMod` = game_featuredMods.id WHERE game_stats.id = %i" % self.uid)
         query.exec_(queryStr)
         if query.size() != 0:
@@ -98,7 +98,7 @@ class replay(object):
             tableMod = "updates_" + str(query.value(0))
             tableModFiles = tableMod + "_files"
 
-            query2 = QSqlQuery(self.parent.db)
+            query2 = QSqlQuery(self.db)
             query2.prepare("SELECT fileId, MAX(version) FROM `%s` LEFT JOIN %s ON `fileId` = %s.id GROUP BY fileId" % (tableModFiles, tableMod, tableMod))
             query2.exec_()
             if query2.size() != 0:
@@ -125,7 +125,7 @@ class replay(object):
                     teams[team].append(name)
 
             self.replayInfo["teams"] = teams
-        self.parent.db.close()
+        self.db.close()
 
     def dataAdded(self):
         for listener in self.listeners:
@@ -236,15 +236,15 @@ class replay(object):
         writeFile.close()
 
         # We mention the existence of the replay inside the Database.
-        self.parent.db.open()
-        query = QSqlQuery(self.parent.db)
+        self.db.open()
+        query = QSqlQuery(self.db)
         query.prepare("INSERT INTO `game_replays`(`UID`) VALUES (?)")
         query.addBindValue(self.uid)
 
         if not query.exec_():
             self.__logger.debug("error adding replay to database")
 
-        self.parent.db.close()
+        self.db.close()
 
         self.__logger.debug("fafreplay written")
 
