@@ -29,6 +29,19 @@ from .replays import *
 
 DB_DATABASE = "faf_lobby"
 
+
+class session(object):
+    def __init__(self, socket):
+        self.socket = socket
+
+    def getSocket(self):
+        return self.socket
+
+    def removeSocket(self):
+        if self.socket is not None:
+            self.socket.abort()
+
+
 class ReplayServer(QtNetwork.QTcpServer):
     ''' 
     This is a local listening server that FA can send its replay data to.

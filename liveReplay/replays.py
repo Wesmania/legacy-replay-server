@@ -49,18 +49,6 @@ def readInt(offset, bin):
     return offset + 4, int
 
 
-class session(object):
-    def __init__(self, socket):
-        self.socket = socket
-
-    def getSocket(self):
-        return self.socket
-
-    def removeSocket(self):
-        if self.socket is not None:
-            self.socket.abort()
-
-
 class replay(object):
     __logger = logging.getLogger(__name__)
 
