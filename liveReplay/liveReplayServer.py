@@ -16,10 +16,8 @@
 # GNU General Public License for more details.
 #-------------------------------------------------------------------------------
 
-from PyQt5 import QtCore, QtNetwork, QtSql
+from PyQt5 import QtNetwork, QtSql
 
-import time
-import os
 import logging
 import sys
 

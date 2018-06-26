@@ -16,23 +16,18 @@
 # GNU General Public License for more details.
 #-------------------------------------------------------------------------------
 
-from PyQt5 import QtCore, QtNetwork, QtGui
+from PyQt5 import QtCore
 from PyQt5.QtSql import QSqlQuery
 import time
-import zipfile
 import logging
 import os
-import copy
 import json
 import zlib
-
-
-DELAY = 300  # Delay in seconds. Add "lag" in the data stream for listeners.
-
 from configobj import ConfigObj
-config = ConfigObj("replayserver.conf")
-
 import struct
+
+config = ConfigObj("replayserver.conf")
+DELAY = 300  # Delay in seconds. Add "lag" in the data stream for listeners.
 
 
 def readLine(offset, bin):
@@ -62,7 +57,7 @@ class session(object):
         return self.socket
 
     def removeSocket(self):
-        if self.socket != None:
+        if self.socket is not None:
             self.socket.abort()
 
 
@@ -177,7 +172,7 @@ WHERE galacticwar.game_stats.id = ? ")
                     self.replayInfo["host"] = name
 
                 if isAi == 0:
-                    if not team in teams:
+                    if team not in teams:
                         teams[team] = []
 
                     teams[team].append(name)
@@ -288,7 +283,7 @@ WHERE galacticwar.game_stats.id = ? ")
             replayStream = QtCore.QDataStream(self.getReplayData(), QtCore.QIODevice.ReadOnly)
             replayStream.device().seek(0)
 
-            while replayStream.atEnd() == False:
+            while not replayStream.atEnd():
 
                 timePacket = replayStream.readDouble()
                 lenData = replayStream.readUInt32()
@@ -423,18 +418,18 @@ class replayListener(object):
             if self.replaydatas.atEnd():
                 return
 
-            if self.packetTimeRead == False:
+            if not self.packetTimeRead:
                 # print "read new packet time"
                 self.timePacket = self.replaydatas.readDouble()
                 self.packetTimeRead = True
 
-            if time.time() - self.timePacket > DELAY or timeCheck == False:
+            if time.time() - self.timePacket > DELAY or not timeCheck:
 
                 lenData = self.replaydatas.readUInt32()
                 datas = self.replaydatas.readRawData(lenData)
 
                 socket = self.session.getSocket()
-                if socket != None:
+                if socket is not None:
                     if socket.isValid() and socket.state() == 3:
                         self.session.getSocket().write(datas)
                         self.replaySent.append(datas)

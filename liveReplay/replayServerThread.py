@@ -16,19 +16,9 @@
 # GNU General Public License for more details.
 #-------------------------------------------------------------------------------
 
-from PyQt5 import QtCore, QtNetwork, QtGui
-
-from PyQt5.QtNetwork import QTcpSocket
-
-import time
-import os
+from PyQt5 import QtCore, QtNetwork
 import logging
-
-import sys
-
 from .replays import replay, replayWriter, session
-
-import logging
 
 
 class ReplayThread(QtCore.QObject):
@@ -58,14 +48,14 @@ class ReplayThread(QtCore.QObject):
 
     def readDatas(self):
 
-        if self.inputSocket != None:
+        if self.inputSocket is not None:
             if self.inputSocket.isValid() and self.inputSocket.state() == 3:
                 datas = self.inputSocket.read(self.inputSocket.bytesAvailable())
                 datas = str(datas)  # Useless in PyQt5. It's a PyQt4 leftover. I kept lot of them to be sure to not break anything.
 
                 # Record locally
 
-                if self.init == False:
+                if not self.init:
                     gw = False
                     if datas.startswith("P/"):
                         index = datas.find("\x00")
@@ -122,14 +112,14 @@ class ReplayThread(QtCore.QObject):
 
     def done(self):
 
-        if self.replay != None:
+        if self.replay is not None:
             if self.receivingReplay:
                 self.replayWriter.stop()
 
             elif self.listeningReplay:
                 self.replay.removeListener(self.newSession)
 
-            if self.replay.isInProgress() == False and self.replay.isListened() == False:
+            if not self.replay.isInProgress() and not self.replay.isListened():
                 self.__logger.debug("closing replay file")
                 self.parent.replays.delete(self.replay)
 
