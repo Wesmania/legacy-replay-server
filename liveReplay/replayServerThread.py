@@ -21,6 +21,18 @@ import logging
 from .replays import replay, replayWriter, session
 
 
+class session(object):
+    def __init__(self, socket):
+        self.socket = socket
+
+    def getSocket(self):
+        return self.socket
+
+    def removeSocket(self):
+        if self.socket is not None:
+            self.socket.abort()
+
+
 class ReplayThread(QtCore.QObject):
     '''
     This is a simple class that takes all the FA replay data input from its inputSocket, writes it to a file, 
