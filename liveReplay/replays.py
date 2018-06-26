@@ -53,7 +53,6 @@ class replay(object):
     __logger = logging.getLogger(__name__)
 
     def __init__(self, gameid, replayName, parent=None):
-
         self.startTime = time.time()
         self.replayInfo = {}
         self.replayInfo["uid"] = gameid
@@ -113,7 +112,6 @@ class replay(object):
             teams = {}
 
             while next(query):
-
                 team = int(query.value(8))
                 name = str(query.value(5))
                 isAi = int(query.value(7))
@@ -124,7 +122,6 @@ class replay(object):
                 if isAi == 0:
                     if team not in teams:
                         teams[team] = []
-
                     teams[team].append(name)
 
             self.replayInfo["teams"] = teams
@@ -149,20 +146,18 @@ class replay(object):
         self.writers.append(writer)
 
     def removeWriter(self, writer):
-        if writer in self.writers:
+        if writer not in self.writers:
+            return
 
-            if len(self.writers) == 1:
-                # writer.sendRestOfDatas()
-                for listener in self.listeners:
-                    listener.sendDatas(False)
-                    listener.neverSwitch = True
-
-                self.done()
-
-            self.writers.remove(writer)
+        if len(self.writers) == 1:
+            # writer.sendRestOfDatas()
+            for listener in self.listeners:
+                listener.sendDatas(False)
+                listener.neverSwitch = True
+            self.done()
+        self.writers.remove(writer)
 
     def addListener(self, session):
-
         listener = replayListener(self, session)
         self.listeners.append(listener)
         listener.newStream()
@@ -215,8 +210,7 @@ class replay(object):
             os.makedirs(dirname)
 
         writeFile = QtCore.QFile(filename)
-        if(writeFile.open(QtCore.QIODevice.WriteOnly)):
-
+        if writeFile.open(QtCore.QIODevice.WriteOnly):
             writeFile.write(json.dumps(self.replayInfo))
             writeFile.write('\n')
 
@@ -229,7 +223,6 @@ class replay(object):
             replayStream.device().seek(0)
 
             while not replayStream.atEnd():
-
                 timePacket = replayStream.readDouble()
                 lenData = replayStream.readUInt32()
                 datas = replayStream.readRawData(lenData)
@@ -353,10 +346,8 @@ class replayListener(object):
 
     def sendDatas(self, timeCheck):
         while True:
-
             if not self.replaydatas:
                 return
-
             if self.replaydatas.atEnd():
                 return
 
@@ -366,20 +357,15 @@ class replayListener(object):
                 self.packetTimeRead = True
 
             if time.time() - self.timePacket > DELAY or not timeCheck:
-
                 lenData = self.replaydatas.readUInt32()
                 datas = self.replaydatas.readRawData(lenData)
-
                 socket = self.session.getSocket()
                 if socket is not None:
                     if socket.isValid() and socket.state() == 3:
                         self.session.getSocket().write(datas)
                         self.replaySent.append(datas)
-
                 self.packetTimeRead = False
-
             else:
-
                 return
 
     def getSession(self):
@@ -391,10 +377,6 @@ class replayListener(object):
 
 
 class replayWriter(object):
-
-    __logger = logging.getLogger(__name__)
-    __logger.setLevel(logging.DEBUG)
-
     def __init__(self, replay, parent=None):
 
         self.parent = parent
@@ -420,7 +402,7 @@ class replayWriter(object):
 
     def write(self, datas):
 
-        if self.replay.currentWriter == None:
+        if self.replay.currentWriter is None:
             self.replay.switchData(self.writerStream)
             self.replay.currentWriter = self
 
@@ -439,25 +421,17 @@ class replayWriter(object):
 
 
 class replays(object):
-
-    __logger = logging.getLogger(__name__)
-    __logger.setLevel(logging.DEBUG)
-
     def __init__(self):
         self.replays = []
 
     def get(self, gameid):
-        result = None
         for replay in self.replays:
             if replay.uid == gameid and replay.isInProgress():
-                self.__logger.debug("replay {} found".format(gameid))
                 return replay
-        return result
+        return None
 
     def delete(self, replay):
-        self.__logger.debug("deleting replay called")
         if replay in self.replays:
-            self.__logger.info("deleting replay %s" % str(replay.uid))
             self.replays.remove(replay)
 
     def checkOldReplays(self):
@@ -466,10 +440,8 @@ class replays(object):
         for r in self.replays:
             diff = time.time() - r.startTime
             if diff > 14400:
-                self.__logger.debug("old replay detected")
                 r.forceEnd()
                 toRemove.append(r)
-
         for replay in toRemove:
             self.delete(replay)
 
