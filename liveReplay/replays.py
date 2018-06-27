@@ -26,8 +26,6 @@ from configobj import ConfigObj
 import struct
 
 config = ConfigObj("replayserver.conf")
-DELAY = 300  # Delay in seconds. Add "lag" in the data stream for listeners.
-
 
 def readLine(offset, bin):
     line = ''
@@ -77,7 +75,7 @@ class replay(object):
 
     def dataAdded(self):
         for listener in self.listeners:
-            listener.sendDatas(True)
+            listener.sendDatas()
 
     def switchData(self, stream):
         self.fileHandle = stream
@@ -98,9 +96,8 @@ class replay(object):
             return
 
         if len(self.writers) == 1:
-            # writer.sendRestOfDatas()
             for listener in self.listeners:
-                listener.sendDatas(False)
+                listener.sendDatas()
                 listener.neverSwitch = True
             self.done()
         self.writers.remove(writer)
@@ -250,24 +247,19 @@ class replayListener(object):
                 return
 
             self.replaydatas = QtCore.QDataStream(self.replay.getReplayData(), QtCore.QIODevice.ReadOnly)
-
             if self.replaySent.length() == 0:
                 return
 
             old_replay_sent = self.stripHeader(QtCore.QByteArray(self.replaySent))
-
             self.replaySent = QtCore.QByteArray()
 
             while True:
                 if self.replaydatas.atEnd():
                     break
-
                 self.replaydatas.readDouble()
                 lenData = self.replaydatas.readUInt32()
                 data = self.replaydatas.readRawData(lenData)
-
                 self.replaySent.append(data)
-
                 if self.replaySent.contains(old_replay_sent):
                     # we are at a point where the old replay was already sent.
                     # We check if we miss some datas.
@@ -276,15 +268,13 @@ class replayListener(object):
                         self.session.getSocket().write(self.replaySent[self.replaySent.indexOf(old_replay_sent) + old_replay_sent.length():])
                         # we send it !
                         self.__logger.info("Sending left over")
-
                     # and we stop sending more.
                     break
-
             self.packetTimeRead = False
         except:
             self.__logger.exception("Something awful happened while switching threads !")
 
-    def sendDatas(self, timeCheck):
+    def sendDatas(self):
         while True:
             if not self.replaydatas:
                 return
@@ -296,15 +286,14 @@ class replayListener(object):
                 self.timePacket = self.replaydatas.readDouble()
                 self.packetTimeRead = True
 
-            if time.time() - self.timePacket > DELAY or not timeCheck:
-                lenData = self.replaydatas.readUInt32()
-                datas = self.replaydatas.readRawData(lenData)
-                socket = self.session.getSocket()
-                if socket is not None:
-                    if socket.isValid() and socket.state() == 3:
-                        self.session.getSocket().write(datas)
-                        self.replaySent.append(datas)
-                self.packetTimeRead = False
+            lenData = self.replaydatas.readUInt32()
+            datas = self.replaydatas.readRawData(lenData)
+            socket = self.session.getSocket()
+            if socket is not None:
+                if socket.isValid() and socket.state() == 3:
+                    self.session.getSocket().write(datas)
+                    self.replaySent.append(datas)
+            self.packetTimeRead = False
             else:
                 return
 
