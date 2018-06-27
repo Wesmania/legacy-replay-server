@@ -17,7 +17,6 @@
 #-------------------------------------------------------------------------------
 
 from PyQt5 import QtCore
-from PyQt5.QtSql import QSqlQuery
 import time
 import logging
 import os
@@ -76,56 +75,6 @@ class replay(object):
 
         for writer in self.writers:
             writer.stop()
-
-    def getReplaysInfos(self):
-        # general stats
-        self.db.open()
-
-        self.replayInfo["game_end"] = time.time()
-        query = QSqlQuery(self.db)
-        queryStr = ("SELECT game_featuredMods.gamemod, gameType, filename, gameName, host, login, playerId, AI, team FROM `game_stats` LEFT JOIN game_player_stats ON `game_player_stats`.`gameId` = game_stats.id LEFT JOIN table_map ON `game_stats`.`mapId` = table_map.id LEFT JOIN login ON login.id = `game_player_stats`.`playerId`  LEFT JOIN  game_featuredMods ON `game_stats`.`gameMod` = game_featuredMods.id WHERE game_stats.id = %i" % self.uid)
-        query.exec_(queryStr)
-        if query.size() != 0:
-            self.replayInfo["num_players"] = query.size()
-            query.first()
-            self.replayInfo["featured_mod"] = str(query.value(0))
-            self.replayInfo["game_type"] = int(query.value(1) or 0)
-            mapname = str(query.value(2))
-            self.replayInfo["title"] = str(query.value(3).encode('utf-8'))
-
-            self.replayInfo["featured_mod_versions"] = {}
-            # checking featured mod version
-            tableMod = "updates_" + str(query.value(0))
-            tableModFiles = tableMod + "_files"
-
-            query2 = QSqlQuery(self.db)
-            query2.prepare("SELECT fileId, MAX(version) FROM `%s` LEFT JOIN %s ON `fileId` = %s.id GROUP BY fileId" % (tableModFiles, tableMod, tableMod))
-            query2.exec_()
-            if query2.size() != 0:
-                while next(query2):
-                    self.replayInfo["featured_mod_versions"][int(query2.value(0))] = int(query2.value(1))
-
-            self.replayInfo["mapname"] = os.path.splitext(os.path.basename(mapname))[0]
-
-            self.replayInfo["complete"] = True
-
-            teams = {}
-
-            while next(query):
-                team = int(query.value(8))
-                name = str(query.value(5))
-                isAi = int(query.value(7))
-
-                if int(query.value(4)) == int(query.value(6)):
-                    self.replayInfo["host"] = name
-
-                if isAi == 0:
-                    if team not in teams:
-                        teams[team] = []
-                    teams[team].append(name)
-
-            self.replayInfo["teams"] = teams
-        self.db.close()
 
     def dataAdded(self):
         for listener in self.listeners:
@@ -190,7 +139,9 @@ class replay(object):
         self.__logger.debug("writing the replay")
         self.__logger.debug(self.uid)
 
-        self.getReplaysInfos()
+        replay_info = self.db.replay_info(self.uid)
+        if replay_info is not None:
+            self.replayInfo.update(replay_info)
 
         # Construct the path where the replay is stored
         path = config['global']['content_path'] + "vault/replay_vault"
@@ -235,17 +186,7 @@ class replay(object):
 
         writeFile.close()
 
-        # We mention the existence of the replay inside the Database.
-        self.db.open()
-        query = QSqlQuery(self.db)
-        query.prepare("INSERT INTO `game_replays`(`UID`) VALUES (?)")
-        query.addBindValue(self.uid)
-
-        if not query.exec_():
-            self.__logger.debug("error adding replay to database")
-
-        self.db.close()
-
+        self.db.add_replay_entry(self.uid)
         self.__logger.debug("fafreplay written")
 
 

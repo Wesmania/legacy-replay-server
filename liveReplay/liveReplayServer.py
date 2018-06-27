@@ -26,6 +26,7 @@ from passwords import DB_SERVER, DB_PORT, DB_LOGIN, DB_PASSWORD
 
 from .replayServerThread import ReplayThread
 from .replays import *
+from .database import Database
 
 DB_DATABASE = "faf_lobby"
 
@@ -40,13 +41,8 @@ class ReplayServer(QtNetwork.QTcpServer):
     def __init__(self, local_port, *args, **kwargs):
         QtNetwork.QTcpServer.__init__(self, *args, **kwargs)
 
-        self.db = QtSql.QSqlDatabase.addDatabase("QMYSQL")
-        self.db.setHostName(DB_SERVER)
-        self.db.setPort(DB_PORT)
+        self.db = Database(DB_SERVER, DB_PORT, DB_DATABASE, DB_LOGIN, DB_PASSWORD)
         self.setMaxPendingConnections(1)
-        self.db.setDatabaseName(DB_DATABASE)
-        self.db.setUserName(DB_LOGIN)
-        self.db.setPassword(DB_PASSWORD)
 
         self.recorders = []
 
