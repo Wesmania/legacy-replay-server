@@ -84,7 +84,7 @@ class ReplayThread(QtCore.QObject):
                 # find if a game with the same uid is running
                 self.replay = self.parent.replays.get(gameId)
                 if self.replay is None:
-                    self.replay = replay(gameId, replayName, self.parent.db)
+                    self.replay = replay(gameId, self.parent.db)
                     self.parent.replays.put(self.replay)
 
                 self.replayWriter = replayWriter(self.replay, self)

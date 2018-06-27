@@ -51,14 +51,13 @@ def readInt(offset, bin):
 class replay(object):
     __logger = logging.getLogger(__name__)
 
-    def __init__(self, gameid, replayName, db):
+    def __init__(self, gameid, db):
         self.startTime = time.time()
         self.replayInfo = {}
         self.replayInfo["uid"] = gameid
         self.replayInfo["featured_mod"] = "faf"
 
         self.db = db
-        self.replayName = replayName
         self.uid = gameid
 
         self.listeners = []
@@ -356,9 +355,6 @@ class replayWriter(object):
 
             if self.replay.currentWriter == self:
                 self.replay.dataAdded()
-
-    def getName(self):
-        return self.replayName
 
 
 class replays(object):
