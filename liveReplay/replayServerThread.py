@@ -59,66 +59,64 @@ class ReplayThread(QtCore.QObject):
         self.newSession = None
 
     def readDatas(self):
+        if self.inputSocket is None:
+            return
+        if not self.inputSocket.isValid():
+            return
+        if self.inputSocket.state() != QtNetwork.QAbstractSocket.ConnectedState:
+            return
 
-        if self.inputSocket is not None:
-            if self.inputSocket.isValid() and self.inputSocket.state() == 3:
-                datas = self.inputSocket.read(self.inputSocket.bytesAvailable())
-                datas = str(datas)  # Useless in PyQt5. It's a PyQt4 leftover. I kept lot of them to be sure to not break anything.
+        datas = self.inputSocket.read(self.inputSocket.bytesAvailable())
 
-                # Record locally
+        if not self.init:
+            if datas.startswith(b"P/"):
+                index = datas.find(b"\x00")
+                replayName = datas[2:index].decode('UTF-8').lower()
+                self.__logger.info("New replay received {}".format(replayName))
+                if not replayName.endswith(".scfareplay"):
+                    self.__logger.warn(("The replay name %s is not valid" % replayName))
+                    self.inputSocket.abort()
+                    return
 
-                if not self.init:
-                    if datas.startswith("P/"):
-                        index = datas.find("\x00")
-                        replayName = datas[2:index].lower()
-                        self.__logger.info("New replay received %s" % replayName)
-                        if not replayName.endswith(".scfareplay"):
-                            self.__logger.warn(("The replay name %s is not valid" % replayName))
-                            self.inputSocket.abort()
-                            return
+                # get the uid
+                gameId = int(replayName.split("/")[0])
 
-                        # get the uid
-                        gameId = int(replayName.split("/")[0])
+                # find if a game with the same uid is running
+                self.replay = self.parent.replays.get(gameId)
+                if self.replay is None:
+                    self.replay = replay(gameId, replayName, self.parent.db)
+                    self.parent.replays.put(self.replay)
 
-                        # find if a game with the same uid is running
+                self.replayWriter = replayWriter(self.replay, self)
+                self.replayWriter.write(datas[index + 1:])
+                self.receivingReplay = True
+                self.init = True
 
-                        self.replay = self.parent.replays.get(gameId)
-                        if self.replay == None:
-                            self.replay = replay(gameId, replayName, self.parent.db)
-                            self.parent.replays.put(self.replay)
+            elif datas.startswith("G/"):
+                # This session requests a replay
 
-                        self.replayWriter = replayWriter(self.replay, self)
+                index = datas.find("\x00")
+                replayName = datas[2:index].lower()
+                self.__logger.info("New replay requested %s" % replayName)
 
-                        self.replayWriter.write(datas[index + 1:])
-                        self.receivingReplay = True
-                        self.init = True
+                # get the uid
+                gameId = int(replayName.split("/")[0])
 
-                    elif datas.startswith("G/"):
-                        # This session requests a replay
+                self.replay = self.parent.replays.get(gameId)
+                if self.replay is None:
+                    self.__logger.warn(("The requested replay %i is not valid" % gameId))
+                    self.inputSocket.abort()
+                    return
 
-                        index = datas.find("\x00")
-                        replayName = datas[2:index].lower()
-                        self.__logger.info("New replay requested %s" % replayName)
+                self.newSession = session(self.inputSocket)
+                self.replay.addListener(self.newSession)
+                self.listeningReplay = True
 
-                        # get the uid
-                        gameId = int(replayName.split("/")[0])
-
-                        self.replay = self.parent.replays.get(gameId)
-                        if self.replay == None:
-                            self.__logger.warn(("The requested replay %i is not valid" % gameId))
-                            self.inputSocket.abort()
-                            return
-
-                        self.newSession = session(self.inputSocket)
-                        self.replay.addListener(self.newSession)
-                        self.listeningReplay = True
-
-                else:
-                    if self.receivingReplay == True:
-                        self.replayWriter.write(datas)
+        else:
+            if self.receivingReplay:
+                self.replayWriter.write(datas)
 
     def done(self):
-
         if self.replay is not None:
             if self.receivingReplay:
                 self.replayWriter.stop()
